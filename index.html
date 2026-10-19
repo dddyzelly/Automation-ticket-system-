@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automation Ticketing</title>
+<style>
+
+  :root {
+    --bg: #f6f7f9;
+    --card: #fff;
+    --text: #1c2330;
+    --muted: #6b7585;
+    --line: #e3e7ee;
+    --accent: #2f6df6;
+    --low: #6b7585;
+    --medium: #2f6df6;
+    --high: #e08a00;
+    --urgent: #d93535;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b;
+      --card: #1b2029;
+      --text: #e8ecf3;
+      --muted: #8d97a8;
+      --line: #2a313d;
+    }
+  }
+
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font: 14px/1.45 system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  main {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+  }
+
+  h1 {
+    margin: 0 12px 0 0;
+    font-size: 16px;
+  }
+
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+  }
+
+  nav button {
+    padding: 8px 12px;
+    background: none;
+    border: 0;
+    border-radius: 6px;
+    color: var(--muted);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  nav button.on {
+    background: var(--accent);
+    color: #fff;
+  }
+
+
+  .card {
+    margin-bottom: 16px;
+    padding: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat b {
+    display: block;
+    font-size: 24px;
+  }
+
+  .stat span {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+
+  th {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  tr.row {
+    cursor: pointer;
+  }
+
+  tr.row:hover {
+    background: var(--bg);
+  }
+
+
+  .tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    font-size: 12px;
+  }
+
+  .p-low    { color: var(--low); }
+  .p-medium { color: var(--medium); }
+  .p-high   { color: var(--high); }
+  .p-urgent { color: var(--urgent); font-weight: 600; }
+
+  .over {
+    color: var(--urgent);
+    font-weight: 600;
+  }
+
+
+  input,
+  select,
+  textarea,
+  button.btn {
+    padding: 7px 9px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text);
+    font: inherit;
+  }
+
+  button.btn {
+    background: var(--accent);
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  button.btn.alt {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+
+  button.btn.del {
+    background: var(--urgent);
+  }
+
+
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .bar input {
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+  }
+
+  .form .full {
+    grid-column: 1 / -1;
+  }
+
+  .wrap {
+    overflow-x: auto;
+  }
+
+  .hide {
+    display: none;
+  }
+
+  .muted {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+
+  dialog {
+    width: min(760px, 94vw);
+    padding: 18px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--text);
+  }
+
+  dialog::backdrop {
+    background: #0008;
+  }
+
+  .cm {
+    margin: 8px 0;
+    padding: 4px 10px;
+    border-left: 3px solid var(--line);
+  }
+
+  .cm.int {
+    background: var(--bg);
+    border-color: var(--high);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Automation Ticketing</h1>
+  <nav id="nav"></nav>
+  <span style="flex:1"></span>
+  <button class="btn alt" onclick="runAuto()">▶ Run automation now</button>
+</header>
+<main id="main"></main>
+<dialog id="dlg"></dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(path, method='GET', body){
+  const r = await fetch('/api/'+path, {method, headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):undefined});
+  const j = await r.json(); if(!r.ok) throw new Error(j.error||'Request failed'); return j;
+}
+const fail = e => alert(e.message);
+let META, AGENTS = [], tab = 'dashboard', filters = {};
+const TABS = {dashboard:'Dashboard', tickets:'Tickets', agents:'Agents', rules:'Automation rules', activity:'Activity & outbox'};
+const fmt = t => t ? new Date(t).toLocaleString() : '—';
+const prio = p => `<span class="tag p-${p}">${p}</span>`;
+const opts = (arr, sel) => arr.map(v => `<option ${v==sel?'selected':''}>${esc(v)}</option>`).join('');
+
+function renderNav(){
+  $('#nav').innerHTML = Object.entries(TABS).map(([k,v]) => `<button class="${k==tab?'on':''}" onclick="go('${k}')">${v}</button>`).join('');
+}
+async function go(t){ tab = t; renderNav(); await views[t](); }
+async function runAuto(){ try{ const r = await api('automation/run','POST'); alert(`Automation ran:\nassigned ${r.assigned}, escalated ${r.escalated}, auto-closed ${r.closed}`); go(tab);}catch(e){fail(e)} }
+
+const views = {
+  async dashboard(){
+    const s = await api('stats');
+    const list = o => Object.entries(o).map(([k,v])=>`<div>${esc(k)}: <b>${v}</b></div>`).join('') || '<span class="muted">none</span>';
+    $('#main').innerHTML = `
+    <div class="grid">
+      <div class="card stat"><b>${s.total}</b><span>Total tickets</span></div>
+      <div class="card stat"><b class="${s.overdue?'over':''}">${s.overdue}</b><span>Overdue (SLA)</span></div>
+      <div class="card stat"><b>${s.unassigned}</b><span>Unassigned</span></div>
+      <div class="card stat"><b>${s.avg_resolution_hours ?? '—'}</b><span>Avg resolution (h)</span></div>
+    </div>
+    <div class="grid">
+      <div class="card"><h4>By status</h4>${list(s.by_status)}</div>
+      <div class="card"><h4>By priority</h4>${list(s.by_priority)}</div>
+      <div class="card"><h4>By category</h4>${list(s.by_category)}</div>
+      <div class="card"><h4>Agent workload</h4>${s.agent_load.map(a=>`<div>${esc(a.name)}: <b>${a.open_tickets}</b></div>`).join('')}</div>
+    </div>
+    <div class="card"><h3>New ticket</h3>${newForm()}</div>`;
+  },
+  async tickets(){
+    const qs = new URLSearchParams(Object.entries(filters).filter(([,v])=>v)).toString();
+    const [rows, ags] = await Promise.all([api('tickets'+(qs?'?'+qs:'')), api('agents')]); AGENTS = ags;
+    const f = (k, arr) => `<select onchange="filters.${k}=this.value;go('tickets')"><option value="">${k}: all</option>${arr.map(v=>`<option value="${esc(v)}" ${filters[k]==v?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
+    $('#main').innerHTML = `
+    <div class="bar"><input id="q" placeholder="Search subject, body, email…" value="${esc(filters.q||'')}" onchange="filters.q=this.value;go('tickets')">
+      ${f('status',META.statuses)}${f('priority',META.priorities)}
+      <label><input type="checkbox" ${filters.overdue?'checked':''} onchange="filters.overdue=this.checked?'1':'';go('tickets')"> overdue only</label></div>
+    <div class="card wrap"><table><tr><th>#</th><th>Subject</th><th>Requester</th><th>Category</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Due</th></tr>
+    ${rows.map(t=>`<tr class="row" onclick="openTicket(${t.id})"><td>${t.id}</td><td>${esc(t.subject)}</td><td>${esc(t.requester_email)}</td>
+      <td>${esc(t.category)}</td><td>${prio(t.priority)}</td><td>${esc(t.status)}</td><td>${esc(t.assignee_name||'—')}</td>
+      <td class="${t.overdue?'over':''}">${fmt(t.due_at)}${t.overdue?' ⚠':''}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">No tickets.</td></tr>'}
+    </table></div>
+    <div class="card"><h3>New ticket</h3>${newForm()}</div>`;
+  },
+  async agents(){
+    AGENTS = await api('agents');
+    $('#main').innerHTML = `<div class="card wrap"><table><tr><th>Name</th><th>Email</th><th>Skills (categories)</th><th>Active</th></tr>
+    ${AGENTS.map(a=>`<tr><td>${esc(a.name)}</td><td>${esc(a.email)}</td><td>${esc(a.skills)}</td>
+    <td><input type="checkbox" ${a.active?'checked':''} onchange="api('agents/${a.id}','PATCH',{active:this.checked?1:0}).catch(fail)"></td></tr>`).join('')}</table></div>
+    <div class="card"><h3>Add agent</h3><div class="form">
+      <input id="an" placeholder="Name"><input id="ae" placeholder="Email"><input id="as" placeholder="Skills: technical,billing">
+      <button class="btn" onclick="addAgent()">Add</button></div></div>`;
+  },
+  async rules(){
+    const rules = await api('rules');
+    $('#main').innerHTML = `<div class="card muted">Rules run on every new ticket, in order, after auto-classification. Built-in automations also run every 30s:
+      auto-assign, SLA escalation, auto-close after resolved, auto-reopen on customer reply.</div>
+    <div class="card wrap"><table><tr><th>On</th><th>Name</th><th>IF</th><th>THEN</th><th></th></tr>
+    ${rules.map(r=>`<tr><td><input type="checkbox" ${r.enabled?'checked':''} onchange="api('rules/${r.id}','PATCH',{enabled:this.checked}).catch(fail)"></td>
+      <td>${esc(r.name)}</td><td>${esc(r.field)} ${esc(r.op)} “${esc(r.value)}”</td><td>${esc(r.action)} = ${esc(r.action_value)}</td>
+      <td><button class="btn del" onclick="delRule(${r.id})">Delete</button></td></tr>`).join('')}</table></div>
+    <div class="card"><h3>Add rule</h3><div class="form">
+      <input id="rn" placeholder="Rule name">
+      <select id="rf">${opts(META.rule_fields)}</select><select id="ro">${opts(META.rule_ops)}</select><input id="rv" placeholder="value">
+      <select id="ra">${opts(META.rule_actions)}</select><input id="rav" placeholder="action value (e.g. high / billing / agent email)">
+      <button class="btn" onclick="addRule()">Add rule</button></div></div>`;
+  },
+  async activity(){
+    const [ev, ob] = await Promise.all([api('events'), api('outbox')]);
+    $('#main').innerHTML = `<div class="card wrap"><h3>Automation log</h3><table>${ev.map(e=>`<tr><td class="muted">${fmt(e.created_at)}</td><td>#${e.ticket_id}</td><td><span class="tag">${esc(e.kind)}</span></td><td>${esc(e.detail)}</td></tr>`).join('')}</table></div>
+    <div class="card wrap"><h3>Email outbox</h3><table>${ob.map(m=>`<tr><td class="muted">${fmt(m.created_at)}</td><td>${esc(m.to_addr)}</td><td>${esc(m.subject)}</td><td>${m.sent?'sent':'queued'}</td></tr>`).join('')}</table></div>`;
+  }
+};
+
+function newForm(){ return `<div class="form">
+  <input id="nem" placeholder="Requester email"><input id="nsu" placeholder="Subject" class="full">
+  <textarea id="nbo" rows="3" placeholder="Describe the issue…" class="full"></textarea>
+  <button class="btn" onclick="createTicket()">Create ticket</button></div>
+  <div class="muted" style="margin-top:6px">Category, priority, assignee and SLA are set automatically.</div>`; }
+async function createTicket(){
+  try{ const t = await api('tickets','POST',{requester_email:$('#nem').value, subject:$('#nsu').value, body:$('#nbo').value});
+    await go('tickets'); openTicket(t.id); }catch(e){fail(e)} }
+async function addAgent(){ try{ await api('agents','POST',{name:$('#an').value,email:$('#ae').value,skills:$('#as').value}); go('agents'); }catch(e){fail(e)} }
+async function addRule(){ try{ await api('rules','POST',{name:$('#rn').value,field:$('#rf').value,op:$('#ro').value,value:$('#rv').value,action:$('#ra').value,action_value:$('#rav').value}); go('rules'); }catch(e){fail(e)} }
+async function delRule(id){ if(confirm('Delete rule?')){ await api('rules/'+id,'DELETE'); go('rules'); } }
+
+async function openTicket(id){
+  const [t, ags] = await Promise.all([api('tickets/'+id), api('agents')]);
+  $('#dlg').innerHTML = `<div style="display:flex;justify-content:space-between"><h3 style="margin:0">#${t.id} ${esc(t.subject)}</h3>
+    <button class="btn alt" onclick="$('#dlg').close()">✕</button></div>
+    <div class="muted">From ${esc(t.requester_email)} · created ${fmt(t.created_at)} · due <span class="${t.overdue?'over':''}">${fmt(t.due_at)}</span> · escalations: ${t.escalations}</div>
+    <p style="white-space:pre-wrap">${esc(t.body)}</p>
+    <div class="form">
+      <label>Status<select onchange="upd(${t.id},{status:this.value})">${opts(META.statuses,t.status)}</select></label>
+      <label>Priority<select onchange="upd(${t.id},{priority:this.value})">${opts(META.priorities,t.priority)}</select></label>
+      <label>Assignee<select onchange="upd(${t.id},{assignee_id:this.value?+this.value:null})"><option value="">Unassigned</option>
+        ${ags.map(a=>`<option value="${a.id}" ${a.id==t.assignee_id?'selected':''}>${esc(a.name)}</option>`).join('')}</select></label>
+    </div>
+    <h4>Conversation</h4>
+    ${t.comments.map(c=>`<div class="cm ${c.internal?'int':''}"><b>${esc(c.author)}</b> <span class="muted">${esc(c.role)}${c.internal?' · internal note':''} · ${fmt(c.created_at)}</span><div style="white-space:pre-wrap">${esc(c.body)}</div></div>`).join('') || '<div class="muted">No comments yet.</div>'}
+    <div class="form" style="margin-top:8px"><textarea id="cb" rows="2" class="full" placeholder="Write a reply…"></textarea>
+      <select id="cr"><option value="agent">Reply as agent</option><option value="requester">Simulate customer reply</option></select>
+      <label><input type="checkbox" id="ci"> internal note</label>
+      <button class="btn" onclick="comment(${t.id})">Send</button></div>
+    <h4>Automation timeline</h4>${t.events.map(e=>`<div class="muted">${fmt(e.created_at)} — <b>${esc(e.kind)}</b>: ${esc(e.detail)}</div>`).join('')}`;
+  $('#dlg').showModal();
+}
+async function upd(id, patch){ try{ await api('tickets/'+id,'PATCH',patch); openTicket(id); }catch(e){fail(e)} }
+async function comment(id){
+  const role = $('#cr').value;
+  try{ await api(`tickets/${id}/comments`,'POST',{author: role=='agent'?'Agent':'Customer', role, body:$('#cb').value, internal:$('#ci').checked}); openTicket(id); }catch(e){fail(e)} }
+$('#dlg').addEventListener('close', () => go(tab));
+
+(async()=>{ META = await api('meta'); go('dashboard'); })();
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+:root {
+  --bg: #f6f7f9;
+  --card: #fff;
+  --text: #1c2330;
+  --muted: #6b7585;
+  --line: #e3e7ee;
+  --accent: #2f6df6;
+  --low: #6b7585;
+  --medium: #2f6df6;
+  --high: #e08a00;
+  --urgent: #d93535;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151b;
+    --card: #1b2029;
+    --text: #e8ecf3;
+    --muted: #8d97a8;
+    --line: #2a313d;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font: 14px/1.45 system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  margin: 0 12px 0 0;
+  font-size: 16px;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+
+nav button {
+  padding: 8px 12px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+nav button.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+.card {
+  margin-bottom: 16px;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat b {
+  display: block;
+  font-size: 24px;
+}
+
+.stat span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+tr.row {
+  cursor: pointer;
+}
+
+tr.row:hover {
+  background: var(--bg);
+}
+
+.tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-size: 12px;
+}
+
+.p-low    { color: var(--low); }
+.p-medium { color: var(--medium); }
+.p-high   { color: var(--high); }
+.p-urgent { color: var(--urgent); font-weight: 600; }
+
+.over {
+  color: var(--urgent);
+  font-weight: 600;
+}
+
+input,
+select,
+textarea,
+button.btn {
+  padding: 7px 9px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+}
+
+button.btn {
+  background: var(--accent);
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+}
+
+button.btn.alt {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+button.btn.del {
+  background: var(--urgent);
+}
+
+/* ---------- Layout helpers ---------- */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.bar input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.form .full {
+  grid-column: 1 / -1;
+}
+
+.wrap {
+  overflow-x: auto;
+}
+
+.hide {
+  display: none;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ---------- Ticket dialog ---------- */
+dialog {
+  width: min(760px, 94vw);
+  padding: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+}
+
+dialog::backdrop {
+  background: #0008;
+}
+
+.cm {
+  margin: 8px 0;
+  padding: 4px 10px;
+  border-left: 3px solid var(--line);
+}
+
+.cm.int {
+  background: var(--bg);
+  border-color: var(--high);
+}
